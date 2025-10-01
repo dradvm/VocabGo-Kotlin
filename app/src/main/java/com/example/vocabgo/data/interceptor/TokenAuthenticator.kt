@@ -41,7 +41,9 @@ class TokenAuthenticator @Inject constructor(
                     newAccessToken = token.accessToken
                     dataStoreManager.setAccessToken(newAccessToken)
                 } else {
-                    return@runBlocking response.request.newBuilder().build()
+                    dataStoreManager.setAccessToken("")
+                    dataStoreManager.setRefreshToken("")
+//                    return@runBlocking response.request.newBuilder().build()
                 }
             }
 

@@ -3,11 +3,12 @@ package com.example.vocabgo.ui.components
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.*
 
 @Composable
-fun MyLottie(lottie: String? = "") {
+fun MyLottie(lottie: String? = "", size: Dp = 200.dp) {
     // Đọc file trong assets
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animation/lottie/$lottie")
@@ -22,6 +23,6 @@ fun MyLottie(lottie: String? = "") {
     LottieAnimation(
         composition = composition,
         progress = { progress },
-        modifier = Modifier.size(200.dp)
+        modifier = Modifier.size(size)
     )
 }

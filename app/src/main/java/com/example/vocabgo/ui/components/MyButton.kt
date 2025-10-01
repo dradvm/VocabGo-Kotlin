@@ -3,11 +3,13 @@ package com.example.vocabgo.ui.components
 import Nunito
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,26 +39,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.vocabgo.R
+import kotlin.invoke
 
 @Composable
 fun MyButton (
     modifier: Modifier = Modifier.fillMaxWidth(),
-    buttonColor: Color,
-    buttonContentColor: Color,
-    shadowColor: Color,
-    shadowBottomOffset: Float,
-    buttonHeight: Float = 0f,
+    buttonColor: Color = MaterialTheme.colorScheme.primary,
+    shadowColor: Color = MaterialTheme.colorScheme.onPrimary,
+    shadowBottomOffset: Float = 4f,
+    buttonHeight: Float = 40f,
     shape: RoundedCornerShape = RoundedCornerShape(14.dp),
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,
-    content: String? = "",
-    icon: (@Composable () -> Unit)? = null
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    clickable: Boolean = true,
+    content: (@Composable () -> Unit)? = null
 ) {
-    val interactionSource = remember {
-        MutableInteractionSource()
+    val interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+    val isPressed by if (clickable) {
+        interactionSource.collectIsPressedAsState()
+    } else {
+        remember { mutableStateOf(false) }
     }
-    val isPressed = interactionSource.collectIsPressedAsState()
-
     Box (
         modifier = modifier
             .height(buttonHeight.dp + shadowBottomOffset.dp)
@@ -62,10 +68,10 @@ fun MyButton (
         Surface(
             modifier = modifier
                 .align(Alignment.BottomCenter)
-                .height(buttonHeight.dp + if (!isPressed.value) {
+                .height(buttonHeight.dp + if (!isPressed) {
                     shadowBottomOffset.dp
                 }
-                else {
+                else  {
                     (shadowBottomOffset * 0.5).dp
                 }),
             color = shadowColor,
@@ -74,25 +80,28 @@ fun MyButton (
         }
         Button(
             onClick = {
-                onClick?.let {
-                    it()
+                if (clickable) {
+                    onClick?.let {
+                        it()
+                    }
                 }
+
             },
             elevation = ButtonDefaults.buttonElevation(
                 defaultElevation = 0.dp,
                 pressedElevation = 0.dp
             ),
-            colors = ButtonDefaults.buttonColors(containerColor = buttonColor, contentColor = buttonContentColor),
+            colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = shape,
             modifier = modifier
                 .align(Alignment.TopCenter)
-                .height(buttonHeight.dp + if (!isPressed.value) {
+                .height(buttonHeight.dp + if (!isPressed) {
                     0.dp
                 } else {
                     shadowBottomOffset.dp
                 })
                 .padding(
-                    top = if (!isPressed.value) {
+                    top = if (!isPressed) {
                         0.dp
                     } else {
                         (shadowBottomOffset * 0.5).dp
@@ -100,20 +109,9 @@ fun MyButton (
                 ),
             interactionSource = interactionSource,
             border = border,
-
+            contentPadding = contentPadding,
             ) {
-            FlowRow (
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                itemVerticalAlignment = Alignment.CenterVertically
-            ) {
-                icon?.invoke()
-                if (content != null) {
-                    Text(
-                        content,
-                        style = TextStyle(fontFamily = Nunito, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
-                    )
-                }
-            }
+            content?.invoke()
         }
     }
 }
@@ -122,14 +120,24 @@ fun MyButton (
 fun PrimaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (@Composable () -> Unit)? = null) {
     MyButton(
         buttonColor = MaterialTheme.colorScheme.primary,
-        buttonContentColor = Color.White,
         shadowColor = MaterialTheme.colorScheme.onPrimary,
-        shadowBottomOffset = 6f,
+        shadowBottomOffset = 4f,
         buttonHeight = 46f,
         onClick = onClick,
-        content = content
     ) {
-        icon?.invoke()
+        FlowRow (
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            itemVerticalAlignment = Alignment.CenterVertically
+        ) {
+            icon?.invoke()
+            if (content != null) {
+                Text(
+                    content,
+                    style = TextStyle(fontFamily = Nunito, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold),
+                    color = Color.White
+                )
+            }
+        }
     }
 }
 
@@ -137,14 +145,23 @@ fun PrimaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (@C
 fun SecondaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (@Composable () -> Unit)? = null) {
     MyButton(
         buttonColor = Color.White,
-        buttonContentColor = MaterialTheme.colorScheme.primary,
-        shadowColor = Color(0xFFE0E0E0),
-        shadowBottomOffset = 4f,
+        shadowColor = MyColors.Swan,
+        shadowBottomOffset = 2f,
         buttonHeight = 48f,
-        border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
+        border = BorderStroke(1.dp, MyColors.Swan),
         onClick = onClick,
-        content = content
     ) {
-        icon?.invoke()
+        FlowRow (
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            itemVerticalAlignment = Alignment.CenterVertically
+        ) {
+            icon?.invoke()
+            if (content != null) {
+                Text(
+                    content,
+                    style = TextStyle(fontFamily = Nunito, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
+                )
+            }
+        }
     }
 }

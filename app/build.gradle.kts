@@ -100,6 +100,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
     kapt("com.google.dagger:hilt-compiler:2.57.1")
     kapt("com.google.dagger:hilt-android-compiler:2.57.1")
+    implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.1")
+    implementation("com.composables:core:1.43.1")
     implementation(libs.ads.mobile.sdk)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.material)
