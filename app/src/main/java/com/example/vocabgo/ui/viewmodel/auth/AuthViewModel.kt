@@ -12,8 +12,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(private val dataStoreManager: DataStoreManager) : ViewModel() {
-    private val _isLoggedIn = MutableStateFlow(false)
-    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
+    private val _isLoggedIn = MutableStateFlow<Boolean?>(null)
+    val isLoggedIn: StateFlow<Boolean?> = _isLoggedIn
+
     init {
         viewModelScope.launch {
             combine(
@@ -26,6 +27,7 @@ class AuthViewModel @Inject constructor(private val dataStoreManager: DataStoreM
             }
         }
     }
+
 
     fun login(accessToken: String, refreshToken: String) {
         viewModelScope.launch {

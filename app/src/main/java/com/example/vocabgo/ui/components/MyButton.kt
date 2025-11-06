@@ -52,15 +52,10 @@ fun MyButton (
     border: BorderStroke? = null,
     onClick: (() -> Unit)? = null,
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
-    clickable: Boolean = true,
     content: (@Composable () -> Unit)? = null
 ) {
     val interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
-    val isPressed by if (clickable) {
-        interactionSource.collectIsPressedAsState()
-    } else {
-        remember { mutableStateOf(false) }
-    }
+    val isPressed by interactionSource.collectIsPressedAsState()
     Box (
         modifier = modifier
             .height(buttonHeight.dp + shadowBottomOffset.dp)
@@ -80,17 +75,11 @@ fun MyButton (
         }
         Button(
             onClick = {
-                if (clickable) {
-                    onClick?.let {
-                        it()
-                    }
+                onClick?.let {
+                    it()
                 }
 
             },
-            elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 0.dp
-            ),
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = shape,
             modifier = modifier
@@ -115,12 +104,62 @@ fun MyButton (
         }
     }
 }
+@Composable
+fun MyButtonWithOutClick (
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    buttonColor: Color = MaterialTheme.colorScheme.primary,
+    shadowColor: Color = MaterialTheme.colorScheme.onPrimary,
+    shadowBottomOffset: Float = 4f,
+    buttonHeight: Float = 40f,
+    shape: RoundedCornerShape = RoundedCornerShape(14.dp),
+    border: BorderStroke? = null,
+    onClick: (() -> Unit)? = null,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    content: (@Composable () -> Unit)? = null
+) {
+    Box (
+        modifier = modifier
+            .height(buttonHeight.dp + shadowBottomOffset.dp)
+    ) {
+        Surface(
+            modifier = modifier
+                .align(Alignment.BottomCenter)
+                .height(buttonHeight.dp + shadowBottomOffset.dp),
+            color = shadowColor,
+            shape = shape
+        ) {
+        }
+        Button(
+            onClick = {
+                onClick?.let {
+                    it()
+                }
+
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+            shape = shape,
+            modifier = modifier
+                .align(Alignment.TopCenter)
+                .height(buttonHeight.dp),
+            border = border,
+            contentPadding = contentPadding,
+        ) {
+            content?.invoke()
+        }
+    }
+}
 
 @Composable
-fun PrimaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (@Composable () -> Unit)? = null) {
+fun PrimaryButton (
+    content: String? = "",
+    onClick: (() -> Unit)? = {},
+    buttonColor: Color = MaterialTheme.colorScheme.primary,
+    shadowColor: Color = MaterialTheme.colorScheme.onPrimary,
+    icon: (@Composable () -> Unit)? = null
+) {
     MyButton(
-        buttonColor = MaterialTheme.colorScheme.primary,
-        shadowColor = MaterialTheme.colorScheme.onPrimary,
+        buttonColor = buttonColor,
+        shadowColor = shadowColor,
         shadowBottomOffset = 4f,
         buttonHeight = 46f,
         onClick = onClick,
@@ -142,7 +181,12 @@ fun PrimaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (@C
 }
 
 @Composable
-fun SecondaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (@Composable () -> Unit)? = null) {
+fun SecondaryButton (
+    content: String? = "",
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    onClick: (() -> Unit)? = {},
+    icon: (@Composable () -> Unit)? = null
+) {
     MyButton(
         buttonColor = Color.White,
         shadowColor = MyColors.Swan,
@@ -159,7 +203,8 @@ fun SecondaryButton (content: String? = "", onClick: (() -> Unit)? = {}, icon: (
             if (content != null) {
                 Text(
                     content,
-                    style = TextStyle(fontFamily = Nunito, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold)
+                    style = TextStyle(fontFamily = Nunito, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold),
+                    color = contentColor
                 )
             }
         }

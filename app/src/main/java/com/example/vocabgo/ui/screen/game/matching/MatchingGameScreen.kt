@@ -30,9 +30,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,57 +48,162 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.vocabgo.data.dto.Word
 import com.example.vocabgo.ui.components.MyButton
 import com.example.vocabgo.ui.components.SecondaryButton
 import com.example.vocabgo.ui.screen.game.GameButton
-import com.example.vocabgo.ui.viewmodel.game.matching.MatchingViewModel
+import com.example.vocabgo.ui.viewmodel.game.GameQuestion
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview()
 @Composable
-fun MatchingGameScreen(viewModel: MatchingViewModel = viewModel()) {
-    Column (
+fun MatchingGameScreen(
+    question: GameQuestion,
+    onReadyToCheck: () -> Unit,
+    onChecked: (Boolean, Boolean) -> Unit,
+    onCheckRegister: (() -> Boolean) -> Unit
+) {
+
+    // region --- State ---
+    val wordItems = remember(question) { mutableStateListOf<Word>() }
+    val meaningItems = remember(question) { mutableStateListOf<Word>() }
+    val matchedItems = remember { mutableStateListOf<Word>() }
+
+    var selectedWord by remember { mutableStateOf<Word?>(null) }
+    var selectedMeaning by remember { mutableStateOf<Word?>(null) }
+
+    var wrongSelectedWord by remember { mutableStateOf<Word?>(null) }
+    var wrongSelectedMeaning by remember { mutableStateOf<Word?>(null) }
+
+    val isWrong by remember {
+        derivedStateOf {
+            wrongSelectedWord != null && wrongSelectedMeaning != null
+        }
+    }
+    val isChecked by remember {
+        derivedStateOf {
+            matchedItems.size == wordItems.size && matchedItems.size > 0
+        }
+    }
+    val coroutineScope = rememberCoroutineScope()
+    // endregion
+
+    // region --- Functions ---
+    fun isMatched(): Boolean {
+        return selectedWord == selectedMeaning
+    }
+
+    fun isBothSelected(): Boolean {
+        return selectedWord != null && selectedMeaning != null
+    }
+
+    fun resetSelection() {
+        selectedWord = null
+        selectedMeaning = null
+    }
+
+    suspend fun toggleSelection(item: Word, isMeaning: Boolean) {
+        if (isMeaning) {
+            selectedMeaning = if (selectedMeaning == item) null else item
+        } else {
+            selectedWord = if (selectedWord == item) null else item
+        }
+
+        if (isBothSelected()) {
+            if (isMatched()) {
+                matchedItems.add(item)
+            } else {
+                wrongSelectedMeaning = selectedMeaning
+                wrongSelectedWord = selectedWord
+                delay(1000)
+                wrongSelectedMeaning = null
+                wrongSelectedWord = null
+            }
+            resetSelection()
+        }
+    }
+    fun selectMeaning(item: Word) {
+        coroutineScope.launch {
+            toggleSelection(item, isMeaning = true)
+        }
+    }
+
+    fun selectWord(item: Word) {
+        coroutineScope.launch {
+            toggleSelection(item, isMeaning = false)
+        }
+    }
+
+
+
+    // endregion
+
+    // region --- Init ---
+    LaunchedEffect(question) {
+        wordItems.clear()
+        meaningItems.clear()
+        matchedItems.clear()
+        selectedWord = null
+        selectedMeaning = null
+        wrongSelectedMeaning = null
+        wrongSelectedWord = null
+
+        wordItems.addAll(question.words.shuffled())
+        meaningItems.addAll(question.words.shuffled())
+    }
+
+    LaunchedEffect(isChecked) {
+        if (isChecked) {
+            onChecked(true, true)
+        }
+    }
+
+    // endregion
+
+    // region --- UI ---
+    Column(
         Modifier.fillMaxSize()
     ) {
         Text(
             "Nhấn vào các cặp tương ứng",
-            style = TextStyle(fontFamily = Nunito, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MyColors.Eel)
+            style = TextStyle(
+                fontFamily = Nunito,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MyColors.Eel
+            )
         )
+
         Box(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            Row (
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-
-                val items = viewModel.items
-                val matchedItems = viewModel.matchedItems
-                val meaningItems = viewModel.meaningItems
-                val wordItems = viewModel.wordItems
-                val selectedMeaning by viewModel.selectedMeaning
-                val selectedWord by viewModel.selectedWord
-                val wrongSelectedMeaning by viewModel.wrongSelectedMeaning
-                val wrongSelectedWord by viewModel.wrongSelectedWord
-                val isWrong by viewModel.isWrong
-                Column (
+                Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     meaningItems.forEach { item ->
                         GameButton(
-                            item.meaning,
+                            item.meaningVi ?: "",
                             selectedMeaning == item,
                             matchedItems.contains(item),
                             wrongSelectedMeaning == item,
-                            matchedItems.contains(item) ||  isWrong,
-                            { viewModel.selectMeaning(
-                            item
-                        ) })
+                            matchedItems.contains(item) || isWrong,
+                            onClick = {
+                                selectMeaning(item)
+                            }
+                        )
                     }
                 }
-                Column (
+
+                Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
@@ -105,35 +214,14 @@ fun MatchingGameScreen(viewModel: MatchingViewModel = viewModel()) {
                             matchedItems.contains(item),
                             wrongSelectedWord == item,
                             matchedItems.contains(item) || isWrong,
-                            { viewModel.selectWord(
-                            item
-                        ) })
+                            onClick = {
+                                selectWord(item)
+                            }
+                        )
                     }
                 }
             }
         }
     }
-//    val sheetState = rememberModalBottomSheetState()
-//    var isSheetOpen by remember { mutableStateOf(true) }
-//    if (isSheetOpen) {
-//        ModalBottomSheet(
-//            onDismissRequest = { isSheetOpen = false },
-//            sheetState = sheetState,
-//            shape = RectangleShape,
-//            dragHandle = null,
-//            scrimColor = Color.Transparent
-//        ) {
-//            Column(
-//                Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp)
-//            ) {
-//                Text("Đây là BottomSheet")
-//                Spacer(Modifier.height(8.dp))
-//                Button(onClick = { isSheetOpen = false }) {
-//                    Text("Đóng")
-//                }
-//            }
-//        }
-//    }
+    // endregion
 }

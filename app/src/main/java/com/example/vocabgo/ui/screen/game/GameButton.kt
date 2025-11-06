@@ -2,11 +2,14 @@ package com.example.vocabgo.ui.screen.game
 
 import Nunito
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -16,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.vocabgo.ui.components.MyButton
+import com.example.vocabgo.ui.components.MyButtonWithOutClick
 
 @Preview()
 @Composable
@@ -26,9 +30,9 @@ fun GameButton (
     isWrong: Boolean = false,
     isDisabled: Boolean = false,
     onClick: (() -> Unit)? = null,
-    buttonHeight: Float = 70f,
+    buttonHeight: Float = 74f,
     modifier: Modifier = Modifier.fillMaxWidth(),
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
 ) {
 
 
@@ -40,8 +44,8 @@ fun GameButton (
     }
 
     val shadowColor = when {
-        isRight -> MyColors.Owl
-        isWrong -> MyColors.Cardinal
+        isRight -> MyColors.Turtle
+        isWrong -> MyColors.Flamingo
         !isSelected -> MyColors.Swan
         else -> MyColors.BlueJay
     }
@@ -52,24 +56,40 @@ fun GameButton (
         !isSelected -> MyColors.Eel
         else -> MyColors.Macaw
     }
-
-    MyButton (
-        onClick = {
-            if (!isDisabled) {
-                onClick?.let { it() }
-            }
-        },
-        buttonColor = buttonColor,
-        shadowColor = shadowColor,
-        buttonHeight = buttonHeight,
-        border = BorderStroke(2.dp, shadowColor),
-        shadowBottomOffset = if (!isDisabled) {2f} else {0f},
-        modifier = modifier,
-        contentPadding = contentPadding
-    ) {
-        Text(
-            content,
-            style = TextStyle(fontFamily = Nunito, fontSize = 18.sp, color = contentColor , fontWeight = FontWeight.SemiBold )
-        )
+    if (isDisabled) {
+        MyButtonWithOutClick (
+            buttonColor = buttonColor,
+            shadowColor = shadowColor,
+            buttonHeight = buttonHeight,
+            border = BorderStroke(2.dp, shadowColor),
+            shadowBottomOffset = 2f,
+            modifier = modifier,
+            contentPadding = contentPadding
+        ) {
+            Text(
+                content,
+                style = TextStyle(fontFamily = Nunito, fontSize = 18.sp, color = contentColor , fontWeight = FontWeight.SemiBold )
+            )
+        }
     }
+    else {
+        MyButton (
+            onClick = {
+                onClick?.let { it() }
+            },
+            buttonColor = buttonColor,
+            shadowColor = shadowColor,
+            buttonHeight = buttonHeight,
+            border = BorderStroke(2.dp, shadowColor),
+            shadowBottomOffset = 2f,
+            modifier = modifier,
+            contentPadding = contentPadding
+        ) {
+            Text(
+                content,
+                style = TextStyle(fontFamily = Nunito, fontSize = 18.sp, color = contentColor , fontWeight = FontWeight.SemiBold )
+            )
+        }
+    }
+
 }

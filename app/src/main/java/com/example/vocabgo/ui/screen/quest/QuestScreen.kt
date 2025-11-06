@@ -193,7 +193,7 @@ fun QuestScreen() {
                 }
             }
             Surface(
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().height(1000.dp),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Column (

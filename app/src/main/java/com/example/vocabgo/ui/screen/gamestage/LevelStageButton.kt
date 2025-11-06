@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.vocabgo.data.dto.Stage
 import com.example.vocabgo.ui.components.MyButton
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
@@ -30,8 +31,13 @@ import compose.icons.fontawesomeicons.solid.ClipboardList
 
 
 @Composable
-fun LevelStageButton(navController: NavController) {
+fun LevelStageButton(navController: NavController, stage: Stage?) {
+    val colorsPair = MyColorsPair.asList()
+    val buttonColor = colorsPair[(stage?.stageOrder?.minus(1))?.rem(colorsPair.size) ?: 0].first
+    val shadowButton =  colorsPair[(stage?.stageOrder?.minus(1))?.rem(colorsPair.size) ?: 0].second
     MyButton(
+        buttonColor = buttonColor,
+        shadowColor = shadowButton,
         buttonHeight = 68f,
         contentPadding = PaddingValues(0.dp),
         onClick = {
@@ -51,22 +57,24 @@ fun LevelStageButton(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    "PHẦN 4, CỬA 10",
+                    "PHẦN ${stage?.gameLevel?.levelOrder} CỬA ${stage?.stageOrder}",
                     color = MyColors.Swan,
                     style = TextStyle(fontFamily = Nunito, fontSize = 13 .sp, fontWeight = FontWeight.ExtraBold )
                 )
-                Text(
-                    "Nói về các ngày nghỉ lễ",
-                    color = Color.White,
-                    style = TextStyle(fontFamily = Nunito, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold )
-                )
+                stage?.stageName?.let {
+                    Text(
+                        it,
+                        color = Color.White,
+                        style = TextStyle(fontFamily = Nunito, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold )
+                    )
+                }
 
             }
             Box(
                 Modifier
                     .width(2.dp)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.onPrimary))
+                    .background(shadowButton))
             Box(
                 Modifier
                     .fillMaxHeight()

@@ -8,16 +8,20 @@ import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.*
 
 @Composable
-fun MyLottie(lottie: String? = "", size: Dp = 200.dp) {
-    // Đọc file trong assets
+fun MyLottie(
+    lottie: String? = "",
+    size: Dp = 200.dp,
+    loopForever: Boolean = true
+) {
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animation/lottie/$lottie")
     )
 
-    // Tự động play & lặp lại
+    val iterations = if (loopForever) LottieConstants.IterateForever else 1
+
     val progress by animateLottieCompositionAsState(
         composition,
-        iterations = LottieConstants.IterateForever
+        iterations = iterations
     )
 
     LottieAnimation(
@@ -26,3 +30,4 @@ fun MyLottie(lottie: String? = "", size: Dp = 200.dp) {
         modifier = Modifier.size(size)
     )
 }
+

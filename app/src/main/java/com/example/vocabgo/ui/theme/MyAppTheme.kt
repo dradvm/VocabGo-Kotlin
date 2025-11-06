@@ -40,6 +40,7 @@ private val MyTypography = Typography(
     titleMedium = TextStyle(fontFamily = Nunito, fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
     bodyMedium = TextStyle(fontFamily = Nunito, fontSize = 16.sp),
 
+
 )
 
 // 3. Shapes
@@ -103,4 +104,13 @@ object MyColors {
     val Beetle = Color(0xffce82ff)
     val Betta = Color(0xff9069cd)
     val Butterfly = Color(0xff6f4ea1)
+}
+object MyColorsPair {
+    val Reds = Pair(MyColors.Cardinal, MyColors.FireAnt)
+    val Yellows = Pair(MyColors.Lion, MyColors.Fox)
+    val Oranges = Pair(MyColors.GuineaPig, MyColors.Grizzly)
+    val Greens = Pair(MyColors.Owl, MyColors.TreeFrog)
+    val Blues = Pair(MyColors.Macaw, MyColors.Whale)
+    val Purples = Pair(MyColors.Beetle, MyColors.Betta)
+    fun asList() = listOf(Reds, Yellows, Oranges, Greens, Blues, Purples)
 }

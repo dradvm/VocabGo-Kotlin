@@ -46,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
@@ -64,25 +65,52 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.vocabgo.R
+import com.example.vocabgo.ui.components.MyLoading
 import com.example.vocabgo.ui.components.MyProgress
 import com.example.vocabgo.ui.components.PrimaryButton
 import com.example.vocabgo.ui.components.SecondaryButton
 import com.example.vocabgo.ui.screen.quest.QuestFriend
+import com.example.vocabgo.ui.viewmodel.TimerViewModel
 import com.example.vocabgo.ui.viewmodel.flashcard.FlashCard
 import com.example.vocabgo.ui.viewmodel.flashcard.FlashCardViewModel
+import com.example.vocabgo.ui.viewmodel.gamestage.GameStageViewModel
 import kotlinx.coroutines.delay
 
-
-@Preview()
 @Composable
-fun FlashCardScreen (viewModel: FlashCardViewModel = viewModel())   {
+fun FlashCardScreen (
+    navController: NavController,
+    gameStageViewModel: GameStageViewModel,
+    flashCardViewModel: FlashCardViewModel,
+    primaryColor: Color,
+    onPrimaryColor: Color,
+    timerViewModel: TimerViewModel = viewModel()
+)   {
+    val stageWords by gameStageViewModel.stageWords.collectAsState()
+    val lesson by gameStageViewModel.currentLesson.collectAsState()
+    val lessonProgress by gameStageViewModel.currentLessonProgress.collectAsState()
+    val cards = flashCardViewModel.cards
+    val dontKnowCards = flashCardViewModel.dontKnowCards
+    val seconds by timerViewModel.seconds.collectAsState()
+    val isEmpty by flashCardViewModel.isEmpty
+    val isLoading by flashCardViewModel.isLoading.collectAsState()
+    LaunchedEffect(stageWords) {
+        flashCardViewModel.setCardsFromStageWords(stageWords)
+    }
+    LaunchedEffect( isEmpty) {
+        if (isEmpty) {
+            navController.navigate(
+                "reward?userLessonProgressId=${lessonProgress?.userLessonProgressId}&kp=${lesson?.lessonReward?.toInt() ?: 0}&timeSpent=${seconds.toInt()}&accuracyRate=${100f}"
+            )
+        }
+    }
     Surface (
         Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.onPrimary)
+            .background(primaryColor)
             .systemBarsPadding(),
-        color = MaterialTheme.colorScheme.onPrimary
+        color = primaryColor
     ) {
         Column (
             modifier = Modifier.fillMaxSize().padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -97,23 +125,16 @@ fun FlashCardScreen (viewModel: FlashCardViewModel = viewModel())   {
                     IconButton(
                         modifier = Modifier.offset(x = 6.dp),
                         onClick = {
-//                        navController.popBackStack()
+                            navController.popBackStack()
                         }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "close",
-                            tint = Color.LightGray,
+                            tint = Color.White,
                             modifier = Modifier.size(30.dp)
                         )
                     }
-                }
-                Row() {
-                    MyProgress(
-                        isBright = false,
-                        height = 6.dp,
-                        progressColor = MaterialTheme.colorScheme.primary
-                    )
                 }
             }
             Box(
@@ -122,55 +143,66 @@ fun FlashCardScreen (viewModel: FlashCardViewModel = viewModel())   {
                     .background(Color.White, RoundedCornerShape(12.dp))
                     .padding(16.dp)
             ) {
-                Column (
-                    Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(30.dp)
-                ) {
-                    val cards = viewModel.cards
-                    Box(
-                        modifier = Modifier.weight(1f)
-                            .fillMaxWidth()
-                            .padding(16.dp, 64.dp),
-                        contentAlignment = Alignment.Center
+
+                when (isLoading) {
+                    true -> MyLoading()
+                    false -> Column (
+                        Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(30.dp)
                     ) {
-                        cards.forEachIndexed{index, card ->
-                            key(card) {
-                                androidx.compose.animation.AnimatedVisibility(
-                                    visible = card.visible.value,
-                                    exit = if (card.slideToLeft.value) {
-                                        slideOutHorizontally { fullWidth -> fullWidth } + fadeOut()
-                                    } else {
-                                        slideOutHorizontally { fullWidth -> -fullWidth } + fadeOut()
-                                    },
-                                    label = "",
-                                ) {
-                                    FlashCardItem(card )
+                        Box(
+                            modifier = Modifier.weight(1f)
+                                .fillMaxWidth()
+                                .padding(16.dp, 64.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            cards.forEachIndexed{index, card ->
+                                key(card) {
+                                    androidx.compose.animation.AnimatedVisibility(
+                                        visible = card.visible.value,
+                                        exit = if (card.slideToLeft.value) {
+                                            slideOutHorizontally { fullWidth -> fullWidth } + fadeOut()
+                                        } else {
+                                            slideOutHorizontally { fullWidth -> -fullWidth } + fadeOut()
+                                        },
+                                        label = "",
+                                    ) {
+                                        FlashCardItem(card, primaryColor, onPrimaryColor)
+                                    }
                                 }
                             }
                         }
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            Box(
+                                Modifier.weight(1f)
+                            ) {
+                                PrimaryButton (
+                                    "Tôi không biết",
+                                    buttonColor = primaryColor,
+                                    shadowColor = onPrimaryColor,
+                                    onClick = { flashCardViewModel.onDontKnowClick() }
+                                ) {
+
+                                }
+                            }
+                            Box(
+                                Modifier.weight(1f)
+                            ) {
+                                SecondaryButton (
+                                    "Tôi đã biết",
+                                    contentColor = primaryColor,
+                                    onClick = { flashCardViewModel.onKnowClick()} ) {
+
+                                }
+                            }
+
+                        }
 
                     }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(20.dp)
-                    ) {
-                        Box(
-                            Modifier.weight(1f)
-                        ) {
-                            PrimaryButton ("Tôi không biết", onClick = { viewModel.onDontKnowClick() }) {
-
-                            }
-                        }
-                        Box(
-                            Modifier.weight(1f)
-                        ) {
-                            SecondaryButton ("Tôi đã biết", onClick = { viewModel.onKnowClick()} ) {
-
-                            }
-                        }
-
-                    }
-
                 }
+
             }
         }
     }

@@ -19,7 +19,19 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE.txt",
+                "META-INF/INDEX.LIST",
+                "META-INF/INDEX.LIST.txt"
+            )
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -40,6 +52,7 @@ android {
         compose = true
     }
     ndkVersion = "28.2.13676358"
+
 }
 
 buildscript {
@@ -92,6 +105,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.57.1")
     // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
+    implementation(libs.object1.detection.custom)
     // https://mvnrepository.com/artifact/androidx.lifecycle/lifecycle-viewmodel
     runtimeOnly("androidx.lifecycle:lifecycle-viewmodel:2.9.4")
     // https://mvnrepository.com/artifact/androidx.lifecycle/lifecycle-runtime-ktx
@@ -102,6 +116,19 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.57.1")
     implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.1")
     implementation("com.composables:core:1.43.1")
+    implementation("info.debatty:java-string-similarity:2.0.0")
+//    implementation("com.google.mlkit:object-detection:17.0.2")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.40.0")
+//    implementation("com.google.cloud:google-cloud-vision:3.75.0")
+//    implementation("com.google.protobuf:protobuf-java:4.32.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+    implementation("io.grpc:grpc-okhttp:1.76.0")
+    // https://mvnrepository.com/artifact/io.github.sceneview/arsceneview
+    implementation("io.github.sceneview:arsceneview:2.3.0")
+    implementation("androidx.camera:camera-camera2:1.5.1")
+    implementation("com.google.mediapipe:tasks-vision:latest.release")
+    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
     implementation(libs.ads.mobile.sdk)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.material)
